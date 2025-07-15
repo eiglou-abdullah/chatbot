@@ -1,4 +1,5 @@
 from google import genai
+from pathlib import Path
 import chromadb
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import Docx2txtLoader
@@ -28,7 +29,10 @@ def load_and_split_docx(file_path: str):
 
 # Example usage: Upload a DOCX and process it
 
-docx_file_path = r"G:\documedai_chatbot_agent\data\Sample FAQs.docx"
+
+# Make path cross-platform and relative
+docx_file_path = Path(__file__).parent / "data" / "Sample FAQs.docx"
+
 docx_documents = load_and_split_docx(docx_file_path)
 
 # Now you can proceed with RAG operations on docx_documents
