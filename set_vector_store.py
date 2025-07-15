@@ -31,7 +31,7 @@ def load_and_split_docx(file_path: str):
 
 
 # Make path cross-platform and relative
-docx_file_path = Path(__file__).parent \ "data" \ "SampleFAQs.docx"
+docx_file_path = Path(__file__).parent / "data" / "SampleFAQs.docx"
 
 docx_documents = load_and_split_docx(docx_file_path)
 
