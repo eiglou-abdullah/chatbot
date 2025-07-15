@@ -38,4 +38,4 @@ HEALTHCHECK --interval=5s --timeout=30s --start-period=5s --retries=3 \
     CMD curl --fail http://localhost:7860/health || exit 1
 
 # Entry point: first run set_vector_store.py to initialize ChromaDB, then run FastAPI app
-CMD ["sh", "-c", "python set_vector_store.py && uv run uvicorn main:app --host 0.0.0.0 --port 7860 --reload"]
+CMD ["sh", "-c", "uv run set_vector_store.py && uv run uvicorn main:app --host 0.0.0.0 --port 7860 --reload"]
