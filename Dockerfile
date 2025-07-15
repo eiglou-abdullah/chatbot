@@ -3,12 +3,29 @@ FROM python:3.11-slim-bullseye
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and build tools
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    wget \
     ca-certificates \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade SQLite (ChromaDB requires >= 3.35.0)
+RUN wget https://www.sqlite.org/2023/sqlite-autoconf-3410100.tar.gz && \
+    tar -xvzf sqlite-autoconf-3410100.tar.gz && \
+    cd sqlite-autoconf-3410100 && \
+    ./configure && make && make install && \
+    cd .. && rm -rf sqlite-autoconf-3410100* && \
+    ldconfig
+
+ENV LD_LIBRARY_PATH="/usr/local/lib"
+ENV PATH="/usr/local/bin:$PATH"
 
 # Install uv package manager
 ADD https://astral.sh/uv/install.sh /uv-installer.sh
