@@ -19,6 +19,7 @@ from agents.tool import function_tool
 from google.genai import types
 
 load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY environment variable not set.")
@@ -35,8 +36,7 @@ model = OpenAIChatCompletionsModel(
     model=MODEL_NAME,
     openai_client=external_client
 )
-config = RunConfig(model=model, model_provider=external_client, tracing_disabled=True)
-set_tracing_disabled(True)
+config = RunConfig(model=model, model_provider=external_client)
 
 
 
@@ -80,7 +80,7 @@ def get_answer_from_collection(collection_name: str, query: str) -> str:
     return resp.text or "No answer generated."
 
 agent = Agent(
-    name="Student Guide",
+    name="Documedai Assistant",
     instructions=instruct,
     tools=[get_answer_from_collection],
 )
