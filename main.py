@@ -12,9 +12,11 @@ from google import genai
 from chromadb.utils import embedding_functions
 from google.genai.types import EmbedContentConfig
 
-from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel, set_tracing_disabled
+from agents import Agent, Runner, OpenAIChatCompletionsModel, set_tracing_disabled
+from openai import AsyncOpenAI
 from agents.run import RunConfig
 from agents.tool import function_tool
+from google.genai import types
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -39,13 +41,35 @@ set_tracing_disabled(True)
 
 
 @function_tool
-def get_answer(query: str):
+def get_answer_from_collection(collection_name: str, query: str) -> str:
+    """
+    Query a specific ChromaDB collection for context and generate an answer.
+
+    Args:
+        collection_name (str): The name of the ChromaDB collection (should match the document name without .docx).
+        query (str): The user's question about the document.
+
+    Returns:
+        str: An answer generated using only the context from the specified document collection.
+
+    Usage:
+        Use this tool to answer questions about a specific document. The collection_name should match the document's filename (without extension) in the /data directory.
+        Example: collection_name='Privacy_Policy', query='What data do you collect?'
+    """
+    # Embed the query using the same model/dimensionality as set_vector_store.py
     query_response = client.models.embed_content(
-        model="models/text-embedding-004",
+        model="gemini-embedding-001",
         contents=[query],
-        config=EmbedContentConfig(task_type="RETRIEVAL_QUERY")
+        config=types.EmbedContentConfig(output_dimensionality=3072, task_type="RETRIEVAL_QUERY")
     )
+    if not query_response.embeddings:
+        raise HTTPException(status_code=500, detail="Embedding API returned no embeddings.")
     query_vector = query_response.embeddings[0].values
+    if not query_vector:
+        raise HTTPException(status_code=500, detail="Query embedding vector is empty.")
+
+    # Query the specified collection
+    collection = chroma_client.get_or_create_collection(name=collection_name)
     results = collection.query(
         query_embeddings=[query_vector],
         n_results=5,
@@ -53,12 +77,12 @@ def get_answer(query: str):
     )
     prompt = f"Context:\n{results}\n\nQuestion:\n{query}\n\nAnswer the question using only the context above."
     resp = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-    return resp.text
+    return resp.text or "No answer generated."
 
 agent = Agent(
     name="Student Guide",
     instructions=instruct,
-    tools=[get_answer],
+    tools=[get_answer_from_collection],
 )
 
 # --- In-memory session store (for demo only!) ---
