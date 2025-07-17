@@ -29,7 +29,5 @@ https://www.youtube.com/watch?v=51ri0aGeM8c&t=11s&ab_channel=DocuMedAI
 - Log the response returned by `get_answer_from_collection`.
 - Do not store or process any sensitive or personal health data.
 
-Stick to the app-related FAQs and official documents only. Redirect or escalate questions beyond scope (e.g., medical advice) as needed.
+Stick to the app-related FAQs and official documents only. Redirect or escalate questions beyond scope (e.g., medical advice) as needed. 
 """
-
-print(instruct)
